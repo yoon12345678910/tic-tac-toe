@@ -1,32 +1,16 @@
 <template>
   <div id="app">
     <div class="game">
-      <div class="game-board">
-        <div className="board-row">
-          <button type="button" class="square" @click="handleClick(0)"></button>
-          <button type="button" class="square" @click="handleClick(1)"></button>
-          <button type="button" class="square" @click="handleClick(2)"></button>
-        </div>
-        <div className="board-row">
-          <button type="button" class="square" @click="handleClick(3)"></button>
-          <button type="button" class="square" @click="handleClick(4)"></button>
-          <button type="button" class="square" @click="handleClick(5)"></button>
-        </div>
-        <div className="board-row">
-          <button type="button" class="square" @click="handleClick(6)"></button>
-          <button type="button" class="square" @click="handleClick(7)"></button>
-          <button type="button" class="square" @click="handleClick(8)"></button>
-        </div>
-
-        <!-- Board -->
-        <!-- <board
-          :squares="squares"
-          @click="{ i => handleClick(i) }"
-        /> -->
-      </div>
+      <board
+        :squares="currentHistory"
+        :handleClick="i => handleClick(i)"
+      />
       <div class="game-info">
-        <!-- Status -->
-        <!-- Moves -->
+        <div>{{ status }}</div>
+        <moves
+          :history="history"
+          :jumpTo="(move) => jumpTo(move)"
+        />
       </div>
     </div>
   </div>
@@ -34,16 +18,79 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-// import Board from './components/Board.vue'
+import Board from './components/Board.vue';
+import Moves from './components/Moves.vue';
+
+export interface History {
+  [index: number]: Squares;
+}
+
+export interface Squares {
+  squares: Square
+}
+
+export interface Square {
+  [index: number]: string[9];
+}
 
 @Component({
   components: {
-    // 'board': Board,
+    Board,
+    Moves,
   },
 })
 export default class App extends Vue {
-  public handleClick(i: Number): void {
-    console.log('handleClick', i);
+  public history: Squares[] = [{ squares: Array(9).fill(null) }];
+  public stepNumber: number = 0;
+  public xIsNext: boolean = false;
+  get currentHistory() {
+    return this.history[this.stepNumber].squares;
+  }
+  get status() {
+    const winner = this.calculateWinner(this.currentHistory);
+    if (winner) {
+      return `Winner:  ${winner}`;
+    }
+    return `Next player:  ${(this.xIsNext ? 'X' : 'O')}`;
+  }
+  public handleClick(i: number): void {
+    const history = this.history.slice(0, this.stepNumber + 1);
+    const current = history[history.length - 1];
+    const squares = current.squares.slice();
+    if (squares[i] || this.calculateWinner(squares)) {
+      return;
+    }
+    squares[i] = this.xIsNext ? 'X' : 'O';
+    this.history = history.concat([
+      { squares },
+    ]);
+    this.stepNumber = this.history.length - 1;
+    this.xIsNext = !this.xIsNext;
+  }
+  public jumpTo(move: number): void {
+    this.stepNumber = move;
+    this.xIsNext = move % 2 === 1;
+  }
+  private calculateWinner(squares: Squares) {
+    const lines = [
+      [0, 1, 2],
+      [3, 4, 5],
+      [6, 7, 8],
+      [0, 3, 6],
+      [1, 4, 7],
+      [2, 5, 8],
+      [0, 4, 8],
+      [2, 4, 6],
+    ];
+    for (const line of lines) {
+      const [a, b, c] = line;
+      if (squares[a]
+        && squares[a] === squares[b]
+        && squares[a] === squares[c]) {
+        return squares[a];
+      }
+    }
+    return null;
   }
 }
 </script>
@@ -53,36 +100,8 @@ export default class App extends Vue {
     font: 14px "Century Gothic", Futura, sans-serif;
     margin: 20px;
   }
-  ol, ul {
-    padding-left: 30px;
-  }
-  .board-row:after {
-    clear: both;
-    content: "";
-    display: table;
-  }
   .status {
     margin-bottom: 10px;
-  }
-  .square {
-    background: #fff;
-    border: 1px solid #999;
-    float: left;
-    font-size: 24px;
-    font-weight: bold;
-    line-height: 34px;
-    height: 34px;
-    margin-right: -1px;
-    margin-top: -1px;
-    padding: 0;
-    text-align: center;
-    width: 34px;
-  }
-  .square:focus {
-    outline: none;
-  }
-  .kbd-navigation .square:focus {
-    background: #ddd;
   }
   .game {
     display: flex;
