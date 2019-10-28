@@ -1,5 +1,9 @@
 <template>
-  <button type="button" class="square" @click="handleClick">
+  <button
+    @click="handleClick"
+    type="button"
+    class="square"
+  >
     {{ value }}
   </button>
 </template>

@@ -26,11 +26,7 @@ export interface History {
 }
 
 export interface Squares {
-  squares: Square
-}
-
-export interface Square {
-  [index: number]: string[9];
+  [index: number]: null | string;
 }
 
 @Component({
@@ -40,12 +36,14 @@ export interface Square {
   },
 })
 export default class App extends Vue {
-  public history: Squares[] = [{ squares: Array(9).fill(null) }];
+  public history: Squares[] = [ Array(9).fill(null) ];
   public stepNumber: number = 0;
   public xIsNext: boolean = false;
+
   get currentHistory() {
-    return this.history[this.stepNumber].squares;
+    return this.history[this.stepNumber];
   }
+
   get status() {
     const winner = this.calculateWinner(this.currentHistory);
     if (winner) {
@@ -53,24 +51,26 @@ export default class App extends Vue {
     }
     return `Next player:  ${(this.xIsNext ? 'X' : 'O')}`;
   }
+
   public handleClick(i: number): void {
     const history = this.history.slice(0, this.stepNumber + 1);
-    const current = history[history.length - 1];
-    const squares = current.squares.slice();
+    const squares = history[history.length - 1].slice();
+
     if (squares[i] || this.calculateWinner(squares)) {
       return;
     }
+
     squares[i] = this.xIsNext ? 'X' : 'O';
-    this.history = history.concat([
-      { squares },
-    ]);
+    this.history = history.concat([ squares ]);
     this.stepNumber = this.history.length - 1;
     this.xIsNext = !this.xIsNext;
   }
+
   public jumpTo(move: number): void {
     this.stepNumber = move;
     this.xIsNext = move % 2 === 1;
   }
+
   private calculateWinner(squares: Squares) {
     const lines = [
       [0, 1, 2],
@@ -82,6 +82,7 @@ export default class App extends Vue {
       [0, 4, 8],
       [2, 4, 6],
     ];
+
     for (const line of lines) {
       const [a, b, c] = line;
       if (squares[a]
@@ -90,14 +91,16 @@ export default class App extends Vue {
         return squares[a];
       }
     }
+
     return null;
   }
+
 }
 </script>
 
 <style>
   body {
-    font: 14px "Century Gothic", Futura, sans-serif;
+    font: 14px "Century Gothic", "Futura", "sans-serif";
     margin: 20px;
   }
   .status {

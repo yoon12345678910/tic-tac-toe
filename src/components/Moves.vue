@@ -3,7 +3,7 @@
     <li
       v-for="(_, move) in history"
       :key="move"
-      >
+    >
       <button @click="() => jumpTo(move)">
         {{ desc(move) }}
       </button>
@@ -19,9 +19,10 @@ import { Squares } from '../App.vue';
 export default class Moves extends Vue {
   @Prop() public history!: Squares[];
   @Prop() public jumpTo!: () => void;
+
   public desc(move: number) {
     return move ?
-      'Go to move #' + move
+      `Go to move # ${move}`
       : 'Go to game start';
   }
 }
