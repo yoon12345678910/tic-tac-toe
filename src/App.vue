@@ -25,9 +25,7 @@ export interface History {
   [index: number]: Squares;
 }
 
-export interface Squares {
-  [index: number]: null | string;
-}
+export type Squares = string[] | null[];
 
 @Component({
   components: {
